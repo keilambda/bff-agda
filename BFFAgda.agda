@@ -5,6 +5,8 @@ module BFFAgda where
 open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to z)
 open import Data.Bool using (Bool; true; false; if_then_else_)
 open import Data.List using (List; []; _∷_)
+open import Data.Maybe using (Maybe; nothing; just)
+open import Data.Product using (_×_; proj₁; proj₂) renaming (_,_ to _x_)
 open import Data.Vec using (Vec; []; _∷_)
 
 data Bit : Set where
@@ -77,3 +79,37 @@ increment (l , c , r , i , o) = l , (inc c) , r , i , o
 
 decrement : State → State
 decrement (l , c , r , i , o) = l , (dec c) , r , i , o
+
+data Cmd : Set where
+  >_ : Cmd → Cmd
+  <_ : Cmd → Cmd
+  +_ : Cmd → Cmd
+  -_ : Cmd → Cmd
+  ·_ : Cmd → Cmd
+  ,_ : Cmd → Cmd
+  [_]_ : Cmd → Cmd → Cmd
+  □ : Cmd
+
+infix 25 [_]_
+
+sequence : Cmd → Cmd → Cmd
+sequence (> c) c' = > (sequence c c')
+sequence (< c) c' = < (sequence c c')
+sequence (+ c) c' = + (sequence c c')
+sequence (- c) c' = - (sequence c c')
+sequence (· c) c' = · (sequence c c')
+sequence (, c) c' = , (sequence c c')
+sequence ([ body ] c) c' = [ body ] (sequence c c')
+sequence □ c' = c'
+
+step : (Cmd × State) → Maybe (Cmd × State)
+step ((> cmd) x s) = just (cmd x stepRight s)
+step ((< cmd) x s) = just (cmd x stepLeft s)
+step ((+ cmd) x s) = just (cmd x increment s)
+step ((- cmd) x s) = just (cmd x decrement s)
+step ((· cmd) x s) = just (cmd x input s)
+step ((, cmd) x s) = just (cmd x output s)
+step ([ body ] cmd x s) =
+  if zero? (curr s) then just (cmd x s)
+  else just ((sequence body ([ body ] cmd)) x s)
+step (□ x s) = nothing
