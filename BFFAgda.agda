@@ -2,7 +2,7 @@
 
 module BFFAgda where
 
-open import Agda.Builtin.Nat using (Nat; zero; suc)
+open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to z)
 open import Data.Bool using (Bool; true; false; if_then_else_)
 open import Data.Vec using (Vec; []; _∷_)
 
@@ -28,12 +28,13 @@ zero? [] = true
 zero? (O ∷ xs) = zero? xs
 zero? (I ∷ xs) = false
 
-init : {n : Nat} → Vec Bit n
-init {zero}  = []
-init {suc m} = O ∷ init
+zero : {n : Nat} → Vec Bit n
+zero {z}     = []
+zero {suc m} = O ∷ zero
 
 record Stream (A : Set) : Set where
   coinductive
+  constructor cons
   field
     head : A
     tail : Stream A
@@ -41,5 +42,5 @@ record Stream (A : Set) : Set where
 open Stream
 
 zeros : Stream Byte
-zeros .head = init
+zeros .head = zero
 zeros .tail = zeros
