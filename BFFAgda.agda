@@ -31,3 +31,15 @@ zero? (I ∷ xs) = false
 init : {n : Nat} → Vec Bit n
 init {zero}  = []
 init {suc m} = O ∷ init
+
+record Stream (A : Set) : Set where
+  coinductive
+  field
+    head : A
+    tail : Stream A
+
+open Stream
+
+zeros : Stream Byte
+zeros .head = init
+zeros .tail = zeros
