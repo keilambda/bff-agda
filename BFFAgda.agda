@@ -4,6 +4,7 @@ module BFFAgda where
 
 open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to z)
 open import Data.Bool using (Bool; true; false; if_then_else_)
+open import Data.List using (List; [])
 open import Data.Vec using (Vec; []; _∷_)
 
 data Bit : Set where
@@ -44,3 +45,12 @@ open Stream
 zeros : Stream Byte
 zeros .head = zero
 zeros .tail = zeros
+
+record State : Set where
+  constructor _,_,_,_,_
+  field
+    left : Stream Byte
+    curr : Byte
+    right : Stream Byte
+    stdin : Stream Byte
+    stdout : List Byte
