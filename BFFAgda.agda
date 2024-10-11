@@ -6,7 +6,7 @@ open import Agda.Builtin.Nat using (Nat; suc) renaming (zero to z)
 open import Data.Bool using (Bool; true; false; if_then_else_)
 open import Data.List using (List; []; _∷_)
 open import Data.Maybe using (Maybe; nothing; just)
-open import Data.Product using (_×_; proj₁; proj₂) renaming (_,_ to _x_)
+open import Data.Product using (_×_) renaming (_,_ to _x_)
 open import Data.Vec using (Vec; []; _∷_)
 
 data Bit : Set where
@@ -113,3 +113,20 @@ step ([ body ] cmd x s) =
   if zero? (curr s) then just (cmd x s)
   else just ((sequence body ([ body ] cmd)) x s)
 step (□ x s) = nothing
+
+record Trace : Set where
+  coinductive
+  field
+    state : State
+    next  : Maybe Trace
+
+open Trace
+
+run : (Cmd × State) → Trace
+run (cmd x s) .state = s
+run (cmd x s) .next with step (cmd x s)
+... | nothing = nothing
+... | just a  = just (run a)
+
+interpret : Cmd → Stream Byte → Trace
+interpret c i = run (c x init i)
